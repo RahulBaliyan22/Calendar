@@ -1,0 +1,254 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Simple Calendar</title>
+    <script
+      src="https://kit.fontawesome.com/1efd4e4a43.js"
+      crossorigin="anonymous"
+    ></script>
+    <style>
+      body {
+        font-family: Arial, sans-serif;
+        /* text-align: center; */
+        margin: 50px;
+      }
+      #container {
+        text-align: center;
+      }
+      table {
+        width: 100%;
+        border-collapse: collapse;
+        margin: 20px 0;
+      }
+
+      th {
+        background-color: #f2f2f2;
+        padding: 10px;
+      }
+
+      td {
+        padding: 20px;
+        border: 1px solid #ccc;
+        height: 100px;
+      }
+
+      .today {
+        background-color: #ffe600; /* Highlight today's date */
+      }
+      #header {
+        display: flex;
+        flex-wrap: wrap;
+        align-content: space-between;
+        justify-content: space-evenly;
+        justify-items: baseline;
+      }
+
+      @media (min-width: 768px) {
+        body {
+          font-size: 18px;
+        }
+
+        #container {
+          padding: 20px;
+        }
+      }
+
+      /* Large screens */
+      @media (min-width: 1200px) {
+        body {
+          font-size: 20px;
+        }
+
+        #container {
+          max-width: 1200px;
+          margin: 0 auto;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <div id="header">
+      <span><span id="clock"></span> <button id="reset"></button></span>
+      <span>
+        <select name="" id="list"></select>
+        <input type="text" id="inpYear" placeholder="Enter a year" />
+      </span>
+    </div>
+
+    <div id="container">
+      <h1>Calendar</h1>
+      <div id="calendar"></div>
+      <button id="prev">
+        <i class="fa fa-chevron-left" aria-hidden="true"></i>
+      </button>
+      <button id="next">
+        <i class="fa fa-chevron-right" aria-hidden="true"></i>
+      </button>
+    </div>
+
+    <script>
+      function generateCalendar(year, month) {
+        const calendar = document.getElementById("calendar");
+        calendar.innerHTML = ""; // Clear previous calendar
+
+        // Create a header for the month and year
+        const header = document.createElement("h2");
+        header.innerText = `${monthNames[month]} ${year}`;
+        calendar.appendChild(header);
+
+        // Create the table for the calendar
+        const table = document.createElement("table");
+
+        // Create the table header
+        const headerRow = document.createElement("tr");
+        const daysOfWeek = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
+        daysOfWeek.forEach((day) => {
+          const th = document.createElement("th");
+          th.innerText = day;
+          headerRow.appendChild(th);
+        });
+        table.appendChild(headerRow);
+
+        // Calculate the first day of the month and number of days in the month
+        const firstDay = new Date(year, month, 1);
+        const lastDate = new Date(year, month + 1, 0).getDate();
+        const startDay = firstDay.getDay();
+
+        // Create an empty row for the calendar
+        let row = document.createElement("tr");
+
+        // Fill in the empty cells before the first day
+        for (let i = 0; i < startDay; i++) {
+          const cell = document.createElement("td");
+          row.appendChild(cell);
+        }
+
+        // Fill in the days of the month
+        for (let date = 1; date <= lastDate; date++) {
+          const cell = document.createElement("td");
+          cell.innerText = date;
+
+          // Highlight today's date
+          const today = new Date();
+          if (
+            date === today.getDate() &&
+            month === today.getMonth() &&
+            year === today.getFullYear()
+          ) {
+            cell.classList.add("today");
+          }
+
+          row.appendChild(cell);
+
+          // Start a new row for each week
+          if ((date + startDay) % 7 === 0) {
+            table.appendChild(row);
+            row = document.createElement("tr");
+          }
+        }
+
+        // Append the last row if it has any cells
+        if (row.childNodes.length > 0) {
+          table.appendChild(row);
+        }
+
+        calendar.appendChild(table);
+      }
+
+      const monthNames = [
+        "January",
+        "February",
+        "March",
+        "April",
+        "May",
+        "June",
+        "July",
+        "August",
+        "September",
+        "October",
+        "November",
+        "December",
+      ];
+
+      // Get the current month and year
+      const today = new Date();
+      let currentYear = today.getFullYear();
+      // today.setMonth(4,10);
+      let currentMonth = today.getMonth();
+      let sM = currentMonth;
+      let setMonth = document.getElementById("list");
+      for (let i = 0; i < monthNames.length; i++) {
+        let option = document.createElement("option");
+        option.innerHTML = monthNames[i];
+        if (i === today.getMonth()) {
+          option.selected = true;
+        }
+        setMonth.appendChild(option);
+      }
+      // Generate the calendar for the current month
+      generateCalendar(currentYear, currentMonth);
+      // add eventlister for other months
+      let but = document.getElementById("next");
+      but.addEventListener("click", () => {
+        currentMonth = currentMonth + 1;
+        if (currentMonth > 11) {
+          currentYear++;
+          currentMonth = 0;
+        }
+        generateCalendar(currentYear, currentMonth);
+      });
+      let butp = document.getElementById("prev");
+      butp.addEventListener("click", () => {
+        currentMonth = currentMonth - 1;
+        if (currentMonth < 0) {
+          currentYear--;
+          currentMonth = 11;
+        }
+        generateCalendar(currentYear, currentMonth);
+      });
+      //goto current date
+      let reset = document.getElementById("reset");
+      reset.innerHTML = monthNames[today.getMonth()];
+      reset.addEventListener("click", () => {
+        currentYear = today.getFullYear();
+        currentMonth = today.getMonth();
+        generateCalendar(currentYear, currentMonth);
+      });
+      // dropdown
+      setMonth.addEventListener("change", (e) => {
+        currentMonth = monthNames.indexOf(setMonth.value);
+        generateCalendar(currentYear, currentMonth);
+      });
+
+      //year
+      let inpYear = document.getElementById("inpYear");
+
+      inpYear.addEventListener("keydown", (e) => {
+        if (e.key === "Enter") {
+          let y = inpYear.value;
+          try {
+            let year = parseInt(y, 10);
+            if (!isNaN(year) && year > 0) {
+              currentYear = year;
+              generateCalendar(currentYear, currentMonth);
+            } else {
+              throw new error();
+            }
+          } catch (error) {
+            alert("Enter correct year");
+          }
+        }
+      });
+
+      //clock
+      let clock = document.getElementById("clock");
+      clock.classList.add("today");
+      setInterval(() => {
+        const today = new Date();
+        clock.innerHTML = `${today.getHours()}:${today.getMinutes()}:${today.getSeconds()}`;
+      }, 0);
+    </script>
+  </body>
+</html>
